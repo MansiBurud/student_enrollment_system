@@ -2,46 +2,33 @@ pipeline {
     agent any
 
     stages {
-        stage('Clone') {
+        stage('Checkout') {
             steps {
-                // Cloning from the main branch instead of master
-                git branch: 'main', url: 'https://github.com/MansiBurud/student_enrollment_system.git'
+                git 'https://github.com/MansiBurud/student_enrollment_system.git'
             }
         }
 
-        stage('Build') {
+        stage('Set up Python') {
             steps {
-                echo 'Building the project...'
-                bat 'mvn clean install'  // For Windows
-                // Or use sh 'mvn clean install' if on Linux
+                bat 'python --version'
+                bat 'python -m pip install --upgrade pip'
+                bat 'pip install -r requirements.txt'
             }
         }
 
-        stage('Test') {
+        stage('Run Unit Tests') {
             steps {
-                echo 'Running tests...'
-                bat 'mvn test'
-            }
-        }
-
-        stage('Archive') {
-            steps {
-                echo 'Archiving the build artifacts...'
-                archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
+                bat 'python -m unittest discover'
             }
         }
     }
 
     post {
-        always {
-            echo 'Pipeline completed.'
-        }
         success {
-            echo 'Build succeeded.'
+            echo '🎉 CI build successful!'
         }
         failure {
-            echo 'Build failed.'
+            echo '❌ CI build failed!'
         }
     }
 }
-
